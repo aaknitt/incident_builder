@@ -18,7 +18,7 @@
 # 4 . . . . . . . . . . . . . Little endian hex version of sampling rate in Hz
 # 4 . . . . . . . . . . . . . Little endian hex version of number of interleaved channels 
 # 8 . . . . . . . . . . . . . "Audacity"
-# 12 . . . . . . . . . . . . "BlockFile112"     [Why "112"?]    
+# 12 . . . . . . . . . . . . "BlockFile112"	 [Why "112"?]	
 # Offset - 44 . . . . . . . 1/85 subsampling of audio data, presumably for quick waveform rendering at very low zoom
 # File_size - Offset . . . Audio in  32 bit IEEE-754 floating point
 
@@ -28,44 +28,51 @@ import struct
 #wav = wave.open("C:\\Users\\knitta\\Desktop\\clip1.wav",'rb')
 #au = open("C:\\Users\\knitta\\Desktop\\test_data\\clip1.au",'wb')
 
-def convert_wav_to_au(wavefilein,aufileout):
-    wav = wave.open(wavefilein,'rb')
-    au = open(aufileout,'wb')
-    srate = wav.getframerate()
-    sampwidth = wav.getsampwidth()
-    nframes = wav.getnframes()
+def convert_wav_to_au(wavefilein,aufileout,start_sec=0,duration_sec=None):
+	wav = wave.open(wavefilein,'rb')
+	au = open(aufileout,'wb')
+	srate = wav.getframerate()
+	sampwidth = wav.getsampwidth()
+	nframes = wav.getnframes()
 
-    #print("Sampling Rate = " + str(srate))
-    #print("Sampling Width = " + str(sampwidth))
-    #print("NumFrames = " + str(nframes))
+	#print("Sampling Rate = " + str(srate))
+	#print("Sampling Width = " + str(sampwidth))
+	#print("NumFrames = " + str(nframes))
 
-    audioframes=[]
-    previewframes=[]
-    previewcount = 0
-    for k in range(0, nframes):
-        frame = wav.readframes(1)
-        frame = struct.unpack('<h',frame)[0]
-        audioframes.append(frame)
-        if k%85 == 0:  #preview data is at 1/85 sample rate
-            previewframes.append(frame)
-            previewcount = previewcount + 4
+	audioframes=[]
+	previewframes=[]
+	previewcount = 0
+	preframes = start_sec*srate
+	wav.readframes(preframes)  #get to where we want to start reading
+	if duration_sec==None:
+		readframes = nframes-preframes
+	else:
+		readframes = duration_sec*srate
+	for k in range(0, readframes):
+		frame = wav.readframes(1)
+		frame = struct.unpack('<h',frame)[0]
+		audioframes.append(frame)
+		if k%85 == 0:  #preview data is at 1/85 sample rate
+			#THIS ISN'T RIGHT....NEED TO FIGURE OUT HOW TO CORRECTLY CREATE PREVIEW DATA
+			previewframes.append(frame)
+			previewcount = previewcount + 4
 
-    au.write("dns.")  #backwards '.snd' from .au file format to specify little-endian
-    au.write(struct.pack('<I',0x2C+previewcount))  #Data Offset in bytes
-    au.write(struct.pack('<I',0xFFFFFFFF))  #Data Size
-    au.write(struct.pack('<I',0x06))  #Data encoding format.  6=32 bit IEEE floating point
-    au.write(struct.pack('<I',srate))  #sampling rate
-    au.write(struct.pack('<I',1))  #number of interleaved audio channels
-    au.write("AudacityBlockFile112")  #Audacity-specific string
+	au.write("dns.")  #backwards '.snd' from .au file format to specify little-endian
+	au.write(struct.pack('<I',0x2C+previewcount))  #Data Offset in bytes
+	au.write(struct.pack('<I',0xFFFFFFFF))  #Data Size
+	au.write(struct.pack('<I',0x06))  #Data encoding format.  6=32 bit IEEE floating point
+	au.write(struct.pack('<I',srate))  #sampling rate
+	au.write(struct.pack('<I',1))  #number of interleaved audio channels
+	au.write("AudacityBlockFile112")  #Audacity-specific string
 
-    #write preview data (annotation field)
-    for pframe in previewframes:
-        au.write(struct.pack('<f',pframe/float(2**(sampwidth*8)/2)))
-    #write actual audio data
-    for aframe in audioframes:
-        au.write(struct.pack('<f',aframe/float(2**(sampwidth*8)/2)))
-        
-    au.close()
-    wav.close()
+	#write preview data (annotation field)
+	for pframe in previewframes:
+		au.write(struct.pack('<f',pframe/float(2**(sampwidth*8)/2)))
+	#write actual audio data
+	for aframe in audioframes:
+		au.write(struct.pack('<f',aframe/float(2**(sampwidth*8)/2)))
+		
+	au.close()
+	wav.close()
 
-    return nframes
+	return readframes, srate

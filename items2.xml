@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<project audacityversion="2.0.6" projname="test_data" rate="44100" version="1.3.0" xmlns="http://audacity.sourceforge.net/xml">
+	<wavtrack channel="2" gain="1" height="150" linked="0" minimized="0" mute="0" name="Audio Track" pan="0" rate="44100" solo="0">
+		<wavclip offset="0">
+			<sequence maxsamples="44100" numsamples="44100" sampleformat="262159">
+				<wavblock start="0">
+					<simpleblockfile filename="test.au" len="44100"/>
+				</wavblock>
+			</sequence>
+		</wavclip>
+	</wavtrack>
+</project>
