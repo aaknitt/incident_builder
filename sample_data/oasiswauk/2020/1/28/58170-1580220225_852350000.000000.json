@@ -1,0 +1,9 @@
+{
+"freq": 8.5235e+08,
+"start_time": 1580220225,
+"stop_time": 1580220234,
+"emergency": 0,
+"talkgroup": 58170,
+"srcList": [ {"src": 6857001, "time": 1580220225, "pos": 0.000000} ],
+"freqList": [ { "freq": 852350000.000000, "time": 1580220225, "pos": 0.000000, "len": 13824.000000, "error_count": 3.000000, "spike_count": 2.000000} ]
+}

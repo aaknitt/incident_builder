@@ -21,12 +21,8 @@
 # 12 . . . . . . . . . . . . "BlockFile112"	 [Why "112"?]	
 # Offset - 44 . . . . . . . 1/85 subsampling of audio data, presumably for quick waveform rendering at very low zoom
 # File_size - Offset . . . Audio in  32 bit IEEE-754 floating point
-
 import wave
 import struct
-
-#wav = wave.open("C:\\Users\\knitta\\Desktop\\clip1.wav",'rb')
-#au = open("C:\\Users\\knitta\\Desktop\\test_data\\clip1.au",'wb')
 
 def convert_wav_to_au(wavefilein,aufileout,start_sec=0,duration_sec=None):
 	wav = wave.open(wavefilein,'rb')
@@ -42,12 +38,12 @@ def convert_wav_to_au(wavefilein,aufileout,start_sec=0,duration_sec=None):
 	audioframes=[]
 	previewframes=[]
 	previewcount = 0
-	preframes = start_sec*srate
+	preframes = int(start_sec*srate)
 	wav.readframes(preframes)  #get to where we want to start reading
 	if duration_sec==None:
 		readframes = nframes-preframes
 	else:
-		readframes = duration_sec*srate
+		readframes = int(duration_sec*srate)
 	for k in range(0, readframes):
 		frame = wav.readframes(1)
 		frame = struct.unpack('<h',frame)[0]
