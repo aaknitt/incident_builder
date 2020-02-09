@@ -15,7 +15,7 @@ parser.add_argument('StartTime', help='Start time of the recordings to retrieve 
 parser.add_argument('StopTime', help='End time of the recordings to retrieve in HH:MM:SS format')
 parser.add_argument('TGIDS', help='Comma separated list of decimanl format talkgroup IDs to retreive')
 parser.add_argument('OutFile', help='Filename of the output Audacity project file.  Must end with .aup extension')
-parser.add_argument('--splitwav', action="store_true", help='split WAV files using JSON data.  Using this option theoretically results in more accurate timing of reconstructed audio but currently has some issues due to trunk-recorder  timestamp problems.  Will also not work well if your trunk-recorder setup has issues with orphaned audio in incorrect talkgroups.')
+parser.add_argument('--splitwav', action="store_true", help='Split WAV files into multiple segments in the Audacity track based on the logged JSON data.  Using this option theoretically results in more accurate timing of reconstructed audio but currently has some issues due to trunk-recorder timestamp problems.  Will also not work well if your trunk-recorder setup has issues with orphaned audio in incorrect talkgroups.')
 
 args = parser.parse_args()
 rpath = args.Path
