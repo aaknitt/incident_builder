@@ -26,7 +26,7 @@ incident_builder is helpful for post-incident analysis of radio traffic for trai
 Upon execution incident_builder will locate all of the recorded audio files for the specified date, time range, and talkgroups, convert the the WAV files to Audacity's .au sound file format (splitting them if specified), and create an Audacity project file (.aup extension - XML format) that arranges the individual files into tracks and locations for display in Audacity.
 
 ### --splitwav option
-The image below shows the difference in how the Audacity project is created depending on whether the --splitwav option is used.  The top track was created without the --splitwav option, while the bottom track was created from the same recordings but with the --splitwav option.  The --splitwav option splits a single trunk-recorder .wav file into multiple audio segments (one for each radio transmission) and arranges them in time based on when the transmissions actually occured (trunk-recorder removes dead air from its wav file recordings).
+The image below shows the difference in how the Audacity project is created depending on whether the --splitwav option is used.  The top track was created with the --splitwav option, while the bottom track was created from the same recordings but without the --splitwav option.  The --splitwav option splits a single trunk-recorder .wav file into multiple audio segments (one for each radio transmission) and arranges them in time based on when the transmissions actually occured (trunk-recorder removes dead air from its wav file recordings).
 ![wavsplit](https://github.com/aaknitt/incident_builder/blob/master/images/wavsplit.png)
 
 ## Known Issues
