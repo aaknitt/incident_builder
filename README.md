@@ -13,7 +13,7 @@ incident_builder is helpful for post-incident analysis of radio traffic for trai
 * **Date**      - Date of the recordings to retrieve in MM/DD/YYYY format
 * **StartTime** - Start time of the recordings to retrieve in HH:MM:SS format
 * **StopTime**  - End time of the recordings to retrieve in HH:MM:SS format
-* **TGIDS**     - Comma separated list of decimanl format talkgroup IDs to retreive
+* **TGIDS**     - Comma separated list of decimal format talkgroup IDs to retreive
 * **OutFile**   - Filename of the output Audacity project file.  Must end with .aup extension
 
 ### Optional Arguments
