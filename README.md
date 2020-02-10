@@ -3,7 +3,7 @@ Create a multi track Audacity project file from [trunk-recorder](https://github.
 
 Specify the date, time range, and talkgroup IDs to retrieve from your trunk-recorder recordings and incident_builder will create an Audacity project file and data folder with a separate audio track for each talkgroup ID, with transmission audio spaced in the track according to the recording timestamps.  
 
-incident_builder is helpful for post-incident analysis of radio traffic for training and analysis purposes.  
+incident_builder is helpful for post-incident analysis of radio traffic for training and debriefing purposes.  
 
 ![incident_builder](https://github.com/aaknitt/incident_builder/blob/master/images/incident_builder.png)
 ## Usage
