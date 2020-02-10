@@ -1,5 +1,5 @@
 # incident_builder
-Create a multi track Audacity project file from [trunk-recorder](https://github.com/robotastic/trunk-recorder) recordings.
+Create a multi track [Audacity](https://www.audacityteam.org) project file from [trunk-recorder](https://github.com/robotastic/trunk-recorder) recordings.
 
 Specify the date, time range, and talkgroup IDs to retrieve from your trunk-recorder recordings and incident_builder will create an Audacity project file and data folder with a separate audio track for each talkgroup ID, with transmission audio spaced in the track according to the recording timestamps.  
 
