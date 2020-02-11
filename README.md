@@ -21,7 +21,7 @@ incident_builder is helpful for post-incident analysis of radio traffic for trai
 
 ### Example:
 
-`builder.py sample_data\oasiswauk 1/28/2020 07:42:00 08:30:00 58909,58910,58361,2059 output.aup --splitwav`
+`builder.py sample_data/oasiswauk 1/28/2020 07:42:00 08:30:00 58909,58910,58361,2059 output.aup --splitwav`
 ## Operation
 Upon execution incident_builder will locate all of the recorded audio files for the specified date, time range, and talkgroups, convert the the WAV files to Audacity's .au sound file format (splitting them if specified), and create an Audacity project file (.aup extension - XML format) that arranges the individual files into tracks and locations for display in Audacity.
 
