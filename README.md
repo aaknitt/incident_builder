@@ -5,7 +5,7 @@ Specify the date, time range, and talkgroup IDs to retrieve from your trunk-reco
 
 incident_builder is helpful for post-incident analysis of radio traffic for training and debriefing purposes.  
 
-![incident_builder](https://github.com/aaknitt/incident_builder/blob/master/images/incident_builder.png)
+![incident_builder](images/incident_builder.png)
 ## Usage
 `builder.py Path Date StartTime StopTime TGIDS OutFile --splitwav`
 ### Required Positional Arguments
@@ -27,10 +27,10 @@ Upon execution incident_builder will locate all of the recorded audio files for 
 
 ### --splitwav option
 The image below shows the difference in how the Audacity project is created depending on whether the --splitwav option is used.  The top track was created with the --splitwav option, while the bottom track was created from the same recordings but without the --splitwav option.  The --splitwav option splits a single trunk-recorder .wav file into multiple audio segments (one for each radio transmission) and arranges them in time based on when the transmissions actually occured (trunk-recorder removes dead air from its wav file recordings).
-![wavsplit](https://github.com/aaknitt/incident_builder/blob/master/images/wavsplit.png)
+![wavsplit](images/wavsplit.png)
 
 ## Known Issues
 * For unknown reasons the timestamps in the trunk_recorder JSON file sometimes specify an incorrect location to split a wav file into segments based on transmissions.  The example below shows a instance where incident_builder split a wav file in the middle of a radio transmission (highlighted in red), where it should have been split near the yellow line instead.  This is an issue with trunk-recorder.  To prevent splitting transmissions, don't use the --splitwav option.  This will result in transmissions being arranged at slightly incorrect times within the audio track, but without the splitting.  
-![badsplit example](https://github.com/aaknitt/incident_builder/blob/master/images/badsplitexample.png)
+![badsplit example](images/badsplitexample.png)
 * Incidents that span more than one date (across midnight) are currently not supported.  Workaround is to create a different Audacity project file for the portion of the incident on each of the two days.  
 * Audacity .au file format is not fully understood.  Preview data (what Audacity shows visually) in the .au file header doesn't seem to be correct yet.  Need to dig into the Audacity source code to fully understand and correct this.  
