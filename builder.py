@@ -34,14 +34,16 @@ if not os.path.isdir(rpath):
 	print("Error - Path to the base trunk-recorder audio recording directory not found")
 	sys.exit()
 #Confirm that date folder exists
-rfilepath = rpath + "\\" + ryear + "\\" + rmonth + "\\" + rday
+rfilepath = rpath + "/" + ryear + "/" + rmonth + "/" + rday
 if not os.path.isdir(rfilepath):
 	print("Error - No recordings found for date provided")
 	sys.exit()
 #Confirm that StopTime is later than StartTime
-utc_offset = time.gmtime()[3]-time.localtime()[3]
-start_timestamp = (datetime.datetime(int(ryear),int(rmonth),int(rday),int(start_time.split(':')[0]),int(start_time.split(':')[1]),int(start_time.split(':')[2]))-datetime.datetime(1970,1,1)+datetime.timedelta(hours=utc_offset)).total_seconds()
-stop_timestamp = (datetime.datetime(int(ryear),int(rmonth),int(rday),int(stop_time.split(':')[0]),int(stop_time.split(':')[1]),int(stop_time.split(':')[2]))-datetime.datetime(1970,1,1)+datetime.timedelta(hours=utc_offset)).total_seconds()
+#utc_offset = time.gmtime()[3]-time.localtime()[3]
+utc_offset = time.timezone
+print utc_offset
+start_timestamp = (datetime.datetime(int(ryear),int(rmonth),int(rday),int(start_time.split(':')[0]),int(start_time.split(':')[1]),int(start_time.split(':')[2]))-datetime.datetime(1970,1,1)+datetime.timedelta(seconds=utc_offset)).total_seconds()
+stop_timestamp = (datetime.datetime(int(ryear),int(rmonth),int(rday),int(stop_time.split(':')[0]),int(stop_time.split(':')[1]),int(stop_time.split(':')[2]))-datetime.datetime(1970,1,1)+datetime.timedelta(seconds=utc_offset)).total_seconds()
 if start_timestamp > stop_timestamp:
 	print("Error - start time is greater than stop time")
 	sys.exit()
@@ -60,12 +62,18 @@ min_timestamp = 2**64
 for fname in os.listdir(rfilepath):
 	if fname.endswith(".json"):
 		timestamp = int(fname[fname.find("-")+1:fname.find("_")])
+		#print(timestamp)
 		TGID = fname[0:fname.find("-")]
+		#print(TGID)
 		if TGID in TGIDS and timestamp > start_timestamp and timestamp < stop_timestamp:
 			fnames.append(fname)
 			if timestamp < min_timestamp:
 				min_timestamp = timestamp
+fnames.sort()
+print(start_timestamp)
+print(stop_timestamp)
 print(min_timestamp)
+print(TGIDS)
 # create the AUP XML file structure
 data = ET.Element('project')
 data.set('xmlns','http://audacity.sourceforge.net/xml')
@@ -91,9 +99,9 @@ for TGID in TGIDS:
 	for fname in fnames:
 		timestamp = int(fname[fname.find("-")+1:fname.find("_")])
 		if fname[0:fname.find("-")] == TGID:
-			wavefilename = rfilepath + "\\" + fname.replace('json','wav')
+			wavefilename = rfilepath + "/" + fname.replace('json','wav')
 			print(wavefilename)
-			with open(rfilepath + "\\" + fname) as json_file:
+			with open(rfilepath + "/" + fname) as json_file:
 					jdata = json.load(json_file)
 			if args.splitwav and len(jdata['srcList']) > 1:
 				i = 0
@@ -105,9 +113,9 @@ for TGID in TGIDS:
 					aufilename = fname.replace('.json','') + str(i) + '.au'
 					i = i + 1
 					if n == len(srcList)-1:
-						nsamples, srate = convert_wav_to_au(wavefilename,datadir + '\\' + aufilename,pos,None)
+						nsamples, srate = convert_wav_to_au(wavefilename,datadir + '/' + aufilename,pos,None)
 					else:
-						nsamples, srate = convert_wav_to_au(wavefilename,datadir + '\\' + aufilename,pos,float(srcList[n+1]['pos'])-pos)
+						nsamples, srate = convert_wav_to_au(wavefilename,datadir + '/' + aufilename,pos,float(srcList[n+1]['pos'])-pos)
 					waveclip = ET.SubElement(wavetrack, 'waveclip')
 					offset = timestamp - min_timestamp
 					waveclip.set('offset',str(offset))
@@ -124,7 +132,7 @@ for TGID in TGIDS:
 					simpleblockfile.set('len',str(nsamples))
 			else:
 				aufilename = fname.replace('.json','') + '.au'
-				nsamples, srate = convert_wav_to_au(wavefilename,datadir + '\\' + aufilename,0,None)
+				nsamples, srate = convert_wav_to_au(wavefilename,datadir + '/' + aufilename,0,None)
 				waveclip = ET.SubElement(wavetrack, 'waveclip')
 				offset = timestamp - min_timestamp
 				waveclip.set('offset',str(offset))
