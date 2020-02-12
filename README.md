@@ -6,6 +6,8 @@ Specify the date, time range, and talkgroup IDs to retrieve from your trunk-reco
 incident_builder is helpful for post-incident analysis of radio traffic for training and debriefing purposes.  
 
 ![incident_builder](images/incident_builder.png)
+## Prerequisites
+You must have [Python](https://python.org) installed on your system.  
 ## Usage
 `builder.py Path Date StartTime StopTime TGIDS OutFile --splitwav`
 ### Required Positional Arguments
