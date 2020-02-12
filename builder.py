@@ -1,3 +1,6 @@
+#(C) Copyright 2020 Andy Knitt
+
+
 from wavtoau import convert_wav_to_au
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
@@ -15,7 +18,9 @@ parser.add_argument('StartTime', help='Start time of the recordings to retrieve 
 parser.add_argument('StopTime', help='End time of the recordings to retrieve in HH:MM:SS format')
 parser.add_argument('TGIDS', help='Comma separated list of decimanl format talkgroup IDs to retreive')
 parser.add_argument('OutFile', help='Filename of the output Audacity project file.  Must end with .aup extension')
-parser.add_argument('--splitwav', action="store_true", help='Split WAV files into multiple segments in the Audacity track based on the logged JSON data.  Using this option theoretically results in more accurate timing of reconstructed audio but currently has some issues due to trunk-recorder timestamp problems.  Will also not work well if your trunk-recorder setup has issues with orphaned audio in incorrect talkgroups.')
+parser.add_argument('--splitwav', dest='splitwav', action='store_true', help='When set, split WAV files into multiple segments in the Audacity track based on the logged JSON data. Results in more accurate timing of reconstructed audio.  Default is set.')
+parser.add_argument('--no-splitwav',dest='splitwav', action='store_false', help='When set, a single segment is created in Audacity per WAV file.  Default is to use --splitwav')
+parser.set_defaults(splitwav=True)
 
 args = parser.parse_args()
 rpath = args.Path
@@ -27,6 +32,7 @@ start_time = args.StartTime
 stop_time = args.StopTime
 TGIDS = args.TGIDS.split(',')
 outfile = args.OutFile
+splitwav = args.splitwav
 
 #Argument validation#############
 #confirm that audio path exists
@@ -103,7 +109,7 @@ for TGID in TGIDS:
 			print(wavefilename)
 			with open(rfilepath + "/" + fname) as json_file:
 					jdata = json.load(json_file)
-			if args.splitwav and len(jdata['srcList']) > 1:
+			if args.splitwav == True and len(jdata['srcList']) > 1:
 				i = 0
 				#CREATE A FOR LOOP WITH THE NUMBER OF SEGMENTS IN THE WAV, INCREMENT .AU FILENAME EACH TIME
 				srcList = jdata['srcList']
@@ -116,20 +122,23 @@ for TGID in TGIDS:
 						nsamples, srate = convert_wav_to_au(wavefilename,datadir + '/' + aufilename,pos,None)
 					else:
 						nsamples, srate = convert_wav_to_au(wavefilename,datadir + '/' + aufilename,pos,float(srcList[n+1]['pos'])-pos)
-					waveclip = ET.SubElement(wavetrack, 'waveclip')
-					offset = timestamp - min_timestamp
-					waveclip.set('offset',str(offset))
-					envelope = ET.SubElement(waveclip,'envelope')
-					envelope.set('numpoints','0')
-					sequence = ET.SubElement(waveclip,'sequence')
-					sequence.set('maxsamples',str(nsamples))
-					sequence.set('sampleformat','262159')
-					sequence.set('numsamples',str(nsamples))
-					waveblock = ET.SubElement(sequence,'waveblock')
-					waveblock.set('start','0')
-					simpleblockfile = ET.SubElement(waveblock,'simpleblockfile')
-					simpleblockfile.set('filename',aufilename)
-					simpleblockfile.set('len',str(nsamples))
+					if nsamples <=0:
+						os.remove(datadir + '/' +aufilename)
+					else:
+						waveclip = ET.SubElement(wavetrack, 'waveclip')
+						offset = timestamp - min_timestamp
+						waveclip.set('offset',str(offset))
+						envelope = ET.SubElement(waveclip,'envelope')
+						envelope.set('numpoints','0')
+						sequence = ET.SubElement(waveclip,'sequence')
+						sequence.set('maxsamples',str(nsamples))
+						sequence.set('sampleformat','262159')
+						sequence.set('numsamples',str(nsamples))
+						waveblock = ET.SubElement(sequence,'waveblock')
+						waveblock.set('start','0')
+						simpleblockfile = ET.SubElement(waveblock,'simpleblockfile')
+						simpleblockfile.set('filename',aufilename)
+						simpleblockfile.set('len',str(nsamples))
 			else:
 				aufilename = fname.replace('.json','') + '.au'
 				nsamples, srate = convert_wav_to_au(wavefilename,datadir + '/' + aufilename,0,None)
@@ -147,10 +156,7 @@ for TGID in TGIDS:
 				simpleblockfile = ET.SubElement(waveblock,'simpleblockfile')
 				simpleblockfile.set('filename',aufilename)
 				simpleblockfile.set('len',str(nsamples))
-
-
-
-
+				
 # create a new AUP XML file with the results
 mydata = ET.tostring(data)
 dom = xml.dom.minidom.parseString(mydata) # or xml.dom.minidom.parseString(xml_string)
