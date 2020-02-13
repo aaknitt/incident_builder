@@ -34,4 +34,4 @@ The image below shows the difference in how the Audacity project is created depe
 
 ## Known Issues
 * Incidents that span more than one date (across midnight) are currently not supported.  Workaround is to create a different Audacity project file for the portion of the incident on each of the two days.  
-* Audacity .au file format is not fully understood.  Preview data (what Audacity shows visually) in the .au file header doesn't seem to be correct yet.  Need to dig into the Audacity source code to fully understand and correct this.  
+ 
