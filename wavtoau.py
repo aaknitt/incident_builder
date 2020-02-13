@@ -23,6 +23,7 @@
 # File_size - Offset . . . Audio in  32 bit IEEE-754 floating point
 import wave
 import struct
+import math
 
 def convert_wav_to_au(wavefilein,aufileout,start_sec=0,duration_sec=None):
 	wav = wave.open(wavefilein,'rb')
@@ -44,26 +45,65 @@ def convert_wav_to_au(wavefilein,aufileout,start_sec=0,duration_sec=None):
 		readframes = nframes-preframes
 	else:
 		readframes = int(duration_sec*srate)
+	counter256 = 0
+	counter64k = 0
+	min256 = 0
+	max256 = 0
+	sumsq256 = 0
+	min64k = 0
+	max64k = 0
+	sumsq64k = 0
+	summary256 = []
+	summary64k = []
 	for k in range(0, readframes):
-		frame = wav.readframes(1)
+		frame = wav.readframes(1)  #could probably speed this up quite a bit by reading in 256 frames at a time
 		frame = struct.unpack('<h',frame)[0]
 		audioframes.append(frame)
-		if k%85 == 0:  #preview data is at 1/85 sample rate
+		if frame < min256:
+			min256 = frame
+		if frame > max256:
+			max256 = frame
+		sumsq256 = sumsq256+frame*frame
+		if counter256 == 255:
+			summary256.append(min256)
+			summary256.append(max256)
+			summary256.append(math.sqrt(sumsq256))
+			min256 = 0
+			max256 = 0
+			sumsq256 = 0
+			counter256 = 0
+		else:
+			counter256 = counter256 + 1
+		if counter64k == 65535:
+			summary64k.append(min64k)
+			summary64k.append(max64k)
+			summary64k.append(math.sqrt(sumsq64k))
+			min64k = 0
+			max64k = 0
+			sumsq64k = 0
+			counter64k = 0
+		else:
+			counter64k = counter64k + 1
+	
+		#if k%85 == 0:  #preview data is at 1/85 sample rate
 			#THIS ISN'T RIGHT....NEED TO FIGURE OUT HOW TO CORRECTLY CREATE PREVIEW DATA
-			previewframes.append(frame)
-			previewcount = previewcount + 4
+		#	previewframes.append(frame)
+		#	previewcount = previewcount + 4
 
 	au.write("dns.")  #backwards '.snd' from .au file format to specify little-endian
-	au.write(struct.pack('<I',0x2C+previewcount))  #Data Offset in bytes
+	au.write(struct.pack('<I',0x2C+len(summary256)*4+len(summary64k)*4))  #Data Offset in bytes
 	au.write(struct.pack('<I',0xFFFFFFFF))  #Data Size
 	au.write(struct.pack('<I',0x06))  #Data encoding format.  6=32 bit IEEE floating point
 	au.write(struct.pack('<I',srate))  #sampling rate
 	au.write(struct.pack('<I',1))  #number of interleaved audio channels
 	au.write("AudacityBlockFile112")  #Audacity-specific string
 
-	#write preview data (annotation field)
-	for pframe in previewframes:
-		au.write(struct.pack('<f',pframe/float(2**(sampwidth*8)/2)))
+	#write summary256 data (annotation field)
+	for sframe in summary256:
+		au.write(struct.pack('<f',sframe/float(2**(sampwidth*8)/2)))
+	#write summary64k data (annotation field)
+	for sframe in summary64k:
+		au.write(struct.pack('<f',sframe/float(2**(sampwidth*8)/2)))
 	#write actual audio data
 	for aframe in audioframes:
 		au.write(struct.pack('<f',aframe/float(2**(sampwidth*8)/2)))
