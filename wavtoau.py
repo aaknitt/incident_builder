@@ -19,7 +19,7 @@
 # 4 . . . . . . . . . . . . . Little endian hex version of number of interleaved channels 
 # 8 . . . . . . . . . . . . . "Audacity"
 # 12 . . . . . . . . . . . . "BlockFile112"	 [Why "112"?]	
-# Offset - 44 . . . . . . . 1/85 subsampling of audio data, presumably for quick waveform rendering at very low zoom
+# Offset - 44 . . . . . . . .Audio summary data - block of min,max,rms values for every 256 audio frames, then another block of min,max,rms values for every 65536 audio frames
 # File_size - Offset . . . Audio in  32 bit IEEE-754 floating point
 import wave
 import struct

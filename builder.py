@@ -46,7 +46,10 @@ if not os.path.isdir(rfilepath):
 	sys.exit()
 #Confirm that StopTime is later than StartTime
 #utc_offset = time.gmtime()[3]-time.localtime()[3]
-utc_offset = time.timezone
+if time.daylight == 0:
+	utc_offset = time.timezone
+else:
+	utc_offset = time.altzone
 print utc_offset
 start_timestamp = (datetime.datetime(int(ryear),int(rmonth),int(rday),int(start_time.split(':')[0]),int(start_time.split(':')[1]),int(start_time.split(':')[2]))-datetime.datetime(1970,1,1)+datetime.timedelta(seconds=utc_offset)).total_seconds()
 stop_timestamp = (datetime.datetime(int(ryear),int(rmonth),int(rday),int(stop_time.split(':')[0]),int(stop_time.split(':')[1]),int(stop_time.split(':')[2]))-datetime.datetime(1970,1,1)+datetime.timedelta(seconds=utc_offset)).total_seconds()
