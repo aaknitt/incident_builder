@@ -42,53 +42,47 @@ def convert_wav_to_au(wavefilein,aufileout,start_sec=0,duration_sec=None):
 	preframes = int(start_sec*srate)
 	wav.readframes(preframes)  #get to where we want to start reading
 	if duration_sec==None:
-		readframes = nframes-preframes
+		totalframes = nframes-preframes
 	else:
-		readframes = int(duration_sec*srate)
-	counter256 = 0
+		totalframes = int(duration_sec*srate)
 	counter64k = 0
 	min256 = 0
 	max256 = 0
-	sumsq256 = 0
-	min64k = 0
-	max64k = 0
-	sumsq64k = 0
+	rms256 = 0
 	summary256 = []
 	summary64k = []
-	for k in range(0, readframes):
-		frame = wav.readframes(1)  #could probably speed this up quite a bit by reading in 256 frames at a time
-		frame = struct.unpack('<h',frame)[0]
-		audioframes.append(frame)
-		if frame < min256:
-			min256 = frame
-		if frame > max256:
-			max256 = frame
-		sumsq256 = sumsq256+frame*frame
-		if counter256 == 255:
-			summary256.append(min256)
-			summary256.append(max256)
-			summary256.append(math.sqrt(sumsq256))
-			min256 = 0
-			max256 = 0
-			sumsq256 = 0
-			counter256 = 0
-		else:
-			counter256 = counter256 + 1
-		if counter64k == 65535:
-			summary64k.append(min64k)
-			summary64k.append(max64k)
-			summary64k.append(math.sqrt(sumsq64k))
-			min64k = 0
-			max64k = 0
-			sumsq64k = 0
+	min256s = []
+	max256s = []
+	rms256s = []
+	frames_read = 0
+	for k in range(0,(totalframes+255)/256):  #read 256 frames at a time to help create summary data while reading frames
+		frames_to_read = min(256,totalframes-frames_read)  #read less than 256 frames if we're at the end of the file
+		frame = wav.readframes(frames_to_read)
+		if sampwidth == 1:
+			frame = list(struct.unpack('<' + 'b'*frames_to_read,frame))
+		if sampwidth == 2:
+			frame = list(struct.unpack('<' + 'h'*frames_to_read,frame))
+		if sampwidth == 4:
+			frame = list(struct.unpack('<' + 'i'*frames_to_read,frame))
+		frames_read = frames_read + frames_to_read  #increment the number of audio frames that we've read so far
+		audioframes = audioframes + frame  #add the audio we just read to our list
+		min256 = min(frame)    #for summary256 data
+		min256s.append(min256) #save to create summary64k data
+		max256 = max(frame)    #for summary256 data
+		max256s.append(min256) #save to create summary64k data
+		rms256 = math.sqrt(sum([i**2 for i in frame]))    #for summary256 data
+		rms256s.append(rms256) #save to create summary64k data
+		summary256.append(min256)
+		summary256.append(max256)
+		summary256.append(rms256)
+		if counter64k == 255:  #create new entry for summary64k data
+			summary64k.append(min(min256s))
+			summary64k.append(max(max256s))
+			summary64k.append(math.sqrt(sum([i**2 for i in rms256s])))
+			min256s = []
+			max256s = []
+			rms256s = []
 			counter64k = 0
-		else:
-			counter64k = counter64k + 1
-	
-		#if k%85 == 0:  #preview data is at 1/85 sample rate
-			#THIS ISN'T RIGHT....NEED TO FIGURE OUT HOW TO CORRECTLY CREATE PREVIEW DATA
-		#	previewframes.append(frame)
-		#	previewcount = previewcount + 4
 
 	au.write("dns.")  #backwards '.snd' from .au file format to specify little-endian
 	au.write(struct.pack('<I',0x2C+len(summary256)*4+len(summary64k)*4))  #Data Offset in bytes
@@ -111,4 +105,4 @@ def convert_wav_to_au(wavefilein,aufileout,start_sec=0,duration_sec=None):
 	au.close()
 	wav.close()
 
-	return readframes, srate
+	return totalframes, srate
