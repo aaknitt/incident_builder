@@ -22,10 +22,11 @@ You must have [Python](https://python.org) installed on your system.
 ### Optional Arguments
 * **--splitwav**    - When set, split WAV files into multiple segments in the Audacity track based on the logged JSON data. Results in more accurate timing of reconstructed audio.  Default is set.
 * **--no-splitwav** - When set, a single segment is created in Audacity per WAV file.  Default is to use --splitwav
+* **--TGID_CSV** - Specify a CSV file with talkgroup names to use in place of the talkgroup number when creating Audacity tracks.  The CSV file should be in trunk-recorder format (decimal TGID number in the first column, the alphanumeric TGID name in the third column)
 
 ### Example:
 
-`builder.py sample_data/oasiswauk 1/28/2020 07:42:00 08:30:00 58909,58910,58361,2059 output.aup --splitwav`
+`builder.py sample_data/oasiswauk 1/28/2020 07:42:00 08:30:00 58909,58910,58361,2059 output.aup --splitwav --TGID_CSV /home/trunk-recorder/mysystem.csv`
 ## Operation
 Upon execution incident_builder will locate all of the recorded audio files for the specified date, time range, and talkgroups, convert the the WAV files to Audacity's .au sound file format (splitting them if specified), and create an Audacity project file (.aup extension - XML format) that arranges the individual files into tracks and locations for display in Audacity.
 
