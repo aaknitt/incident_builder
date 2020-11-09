@@ -20,7 +20,9 @@ parser.add_argument('TGIDS', help='Comma separated list of decimanl format talkg
 parser.add_argument('OutFile', help='Filename of the output Audacity project file.  Must end with .aup extension')
 parser.add_argument('--splitwav', dest='splitwav', action='store_true', help='When set, split WAV files into multiple segments in the Audacity track based on the logged JSON data. Results in more accurate timing of reconstructed audio.  Default is set.')
 parser.add_argument('--no-splitwav',dest='splitwav', action='store_false', help='When set, a single segment is created in Audacity per WAV file.  Default is to use --splitwav')
+parser.add_argument('--TGID_CSV', help='CSV file containing TGID names in trunk-recorder format')
 parser.set_defaults(splitwav=True)
+parser.set_defaults(TGID_CSV='')
 
 args = parser.parse_args()
 rpath = args.Path
@@ -33,6 +35,7 @@ stop_time = args.StopTime
 TGIDS = args.TGIDS.split(',')
 outfile = args.OutFile
 splitwav = args.splitwav
+TGID_CSV = args.TGID_CSV
 
 #Argument validation#############
 #confirm that audio path exists
@@ -60,11 +63,27 @@ if start_timestamp > stop_timestamp:
 if outfile[-4:] != '.aup':
 	print("Error - invalid output filename - must end in .aup")
 	sys.exit()
+#Confirm that TGID CSV file exists
+if TGID_CSV != '':
+	if not os.path.isfile(TGID_CSV):
+		print("Error - TGID CSV file does not exist")
+		sys.exit()
 ##############################################
 
 datadir = outfile.replace('.aup','') + '_data'  #Audacity requires data directory to have this naming convention
 if not os.path.isdir(datadir):
 	os.mkdir(datadir)
+
+#if we have a TGID CSV file, parse it into a dict
+TGIDdict = {}
+if TGID_CSV != '':
+	with open(TGID_CSV,'r') as f:
+		for line in f:
+			try:
+				splitline = line.split(',')
+				TGIDdict[int(splitline[0])] = splitline[3]
+			except:
+				pass
 
 fnames = []
 min_timestamp = 2**64
@@ -94,7 +113,10 @@ tags = ET.SubElement(data,'tags')
 #CREATE A NEW WAV TRACK FOR EACH TGID
 for TGID in TGIDS:
 	wavetrack = ET.SubElement(data, 'wavetrack')
-	wavetrack.set('name','TG' + str(TGID))
+	try:
+		wavetrack.set('name',TGIDdict[int(TGID)])
+	except:
+		wavetrack.set('name','TG' + str(TGID))
 	wavetrack.set('channel','2')  #0 = Left, 1 = Right, 2 = Mono
 	wavetrack.set('linked','0')
 	wavetrack.set('mute','0')
